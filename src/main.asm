@@ -21,7 +21,7 @@ PPUDATA   = $2007
 .incbin "../res/pattern_tables.chr" ; include the binary file created with NEXXT
 
 .segment "RODATA" ; Prepare data separated from the logic in this segment
-string: .asciiz "Hello, World!" ; null-terminated string
+string: .asciiz "Welcome to Nes-rs" ; null-terminated string
 
 .segment "CODE"
 .export irq_handler
