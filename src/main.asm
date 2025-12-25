@@ -88,9 +88,13 @@ string: .asciiz "NES-RS" ; null-terminated string
   ;            ^^
   STX PPUADDR
   ; Finally, we need indexes of two PPU's internal color
-  LDA #$0F ; black for the transparency color (palette 0 color 0)
+  LDA #$2A ; green for the transparency color (palette 0 color 0)
   STA PPUDATA
-  LDA #$30 ; white for the first background color (palette 0 color 1)
+  LDA #$17 ; orange for the first background color (palette 0 color 1)
+  STA PPUDATA
+  LDA #$21   ; color 2: blue
+  STA PPUDATA
+  LDA #$0F   ; color 3: black
   STA PPUDATA
 
   ; Nametable 0
