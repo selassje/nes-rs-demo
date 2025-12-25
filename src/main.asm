@@ -24,6 +24,11 @@ PPUDATA   = $2007
 title: .asciiz "NES-RS" ; null-terminated string
 build_version: .asciiz "Build: xxxxxx" ; null-terminated string
 
+.segment "ZEROPAGE"
+tmp:   .res 1
+tmp_col:  .res 1
+
+
 .segment "CODE"
 .export irq_handler
 .proc irq_handler ; 6502 requires this handler
@@ -98,15 +103,9 @@ build_version: .asciiz "Build: xxxxxx" ; null-terminated string
   LDA #$0F   ; color 3: black
   STA PPUDATA
 
-  ; Nametable 0
-  ; I have chosen a position near the center of the screen
-  ; Address 218c
-  LDX #$21 ; 218c
-  ;          ^^
-  STX PPUADDR
-  LDX #$8c ; 218c
-  ;            ^^
-  STX PPUADDR
+  LDX #10
+  LDY #08
+  JSR SetPPUAddr
   LDX #0
   LDA title,X ; load first character of the string
   .scope
@@ -117,10 +116,9 @@ build_version: .asciiz "Build: xxxxxx" ; null-terminated string
       BNE print ; repeat until null character is loaded
   .endscope
   
-  LDX #$21
-  STX PPUADDR
-  LDX #$ac
-  STX PPUADDR
+  LDX #10
+  LDY #10
+  JSR SetPPUAddr
   LDX #0
   LDA build_version,X ; load first character of the string
   .scope
@@ -143,6 +141,41 @@ build_version: .asciiz "Build: xxxxxx" ; null-terminated string
   forever:
     JMP forever ; Make CPU wait forever, while PPU keeps drawing frames forever
 .endproc
+
+;-------------------------------------------
+; SetPPUAddr
+; X = column (0–31)
+; Y = row    (0–29)
+;-------------------------------------------
+SetPPUAddr:
+    STX tmp_col        ; save column
+
+    ; ----- low byte -----
+    TYA
+    ASL A
+    ASL A
+    ASL A
+    ASL A
+    ASL A              ; A = (row * 32) low byte
+    CLC
+    ADC tmp_col
+    STA tmp             ; low byte
+
+    ; ----- high byte -----
+    TYA
+    LSR A
+    LSR A
+    LSR A              ; A = row / 8
+    CLC
+    ADC #$20            ; base nametable
+    STA tmp_col         ; high byte
+
+    ; ----- write PPUADDR -----
+    LDA tmp_col
+    STA PPUADDR
+    LDA tmp
+    STA PPUADDR
+    RTS
 
 .segment "VECTORS" ; 6502 requires this segment
 .addr nmi_handler, reset_handler, irq_handler
