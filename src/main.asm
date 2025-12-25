@@ -21,7 +21,8 @@ PPUDATA   = $2007
 .incbin "../res/pattern_tables.chr" ; include the binary file created with NEXXT
 
 .segment "RODATA" ; Prepare data separated from the logic in this segment
-string: .asciiz "NES-RS" ; null-terminated string
+title: .asciiz "NES-RS" ; null-terminated string
+build_version: .asciiz "Build: xxxxxx" ; null-terminated string
 
 .segment "CODE"
 .export irq_handler
@@ -107,12 +108,26 @@ string: .asciiz "NES-RS" ; null-terminated string
   ;            ^^
   STX PPUADDR
   LDX #0
-  LDA string,X ; load first character of the string
+  LDA title,X ; load first character of the string
   .scope
     print:
       STA PPUDATA ; write its ASCII code, which coincides with its tile index
       INX
-      LDA string,X ; load next character of the string
+      LDA title,X ; load next character of the string
+      BNE print ; repeat until null character is loaded
+  .endscope
+  
+  LDX #$21
+  STX PPUADDR
+  LDX #$ac
+  STX PPUADDR
+  LDX #0
+  LDA build_version,X ; load first character of the string
+  .scope
+    print:
+      STA PPUDATA ; write its ASCII code, which coincides with its tile index
+      INX
+      LDA build_version,X ; load next character of the string
       BNE print ; repeat until null character is loaded
   .endscope
 
