@@ -21,7 +21,7 @@ PPUDATA   = $2007
 .incbin "../res/pattern_tables.chr" ; include the binary file created with NEXXT
 
 .segment "RODATA" ; Prepare data separated from the logic in this segment
-string: .asciiz "Welcome to Nes-rs" ; null-terminated string
+string: .asciiz "NES-RS" ; null-terminated string
 
 .segment "CODE"
 .export irq_handler
@@ -66,6 +66,7 @@ string: .asciiz "Welcome to Nes-rs" ; null-terminated string
   ;                           ^^
   LDA #$00
   STA PPUADDR ; (this also clears the w register)
+
   LDX #0 ; index for inner loop; overflows after 256
   LDY #4 ; index for outer loop; repeat overflow 4 times
   empty_background:
