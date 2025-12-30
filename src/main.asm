@@ -7,6 +7,9 @@ PPUSCROLL = $2005
 PPUADDR   = $2006
 PPUDATA   = $2007
 
+ASCII_A = $30 ; ASCII code of 'A'
+
+
 .segment "HEADER"
 ;            EOF
 .byte "NES", $1A
@@ -18,7 +21,7 @@ PPUDATA   = $2007
 .byte %00000000 ; NTSC format
 
 .segment "CHR"
-.incbin "../res/pattern_tables.chr" ; include the binary file created with NEXXT
+.incbin "../res/pattern_tables_2.chr" ; include the binary file created with NEXXT
 
 .segment "RODATA" ; Prepare data separated from the logic in this segment
 title: .asciiz "NES-RS" ; null-terminated string
@@ -27,6 +30,7 @@ build_version: .asciiz "Build: xxxxxx" ; null-terminated string
 .segment "ZEROPAGE"
 tmp:   .res 1
 tmp_col:  .res 1
+PPUCTRL_SHADOW: .res 1
 
 
 .segment "CODE"
@@ -47,6 +51,7 @@ tmp_col:  .res 1
   ; NES CPU is a MOS 6502 clone without decimal mode
   LDX #%00000000
   STX PPUCTRL ; PPU is unstable on boot, ignore NMI for now
+  STX PPUCTRL_SHADOW ; PPU is unstable on boot, ignore NMI for now
   STX PPUMASK ; Deactivate PPU drawing, so CPU can safely write to PPU's VRAM
   BIT PPUSTATUS ; Clear the vblank flag; its value on boot cannot be trusted
   vblankwait1: ; PPU unstable on boot, wait for vertical blanking
@@ -106,18 +111,42 @@ tmp_col:  .res 1
   LDX #10
   LDY #08
   JSR SetPPUAddr
+  JSR SelectPatternTable_0
   LDX #0
-  LDA title,X ; load first character of the string
-  .scope
-    print:
-      STA PPUDATA ; write its ASCII code, which coincides with its tile index
+ .scope
+    print_big:
+      LDA title,X
+     ; CLC
+      ;ADC #$A0        ; apply font base offset
+      BEQ done          ; end of string
+      LDA #$CE           ; save ASCII / tile index
+      STA PPUDATA       ; write top tile
       INX
-      LDA title,X ; load next character of the string
-      BNE print ; repeat until null character is loaded
+      JMP print_big
+    done:
   .endscope
   
   LDX #10
-  LDY #10
+  LDY #09
+  JSR SetPPUAddr
+  JSR SelectPatternTable_0
+  LDX #0
+ .scope
+    print_big:
+      LDA title,X
+     ; CLC
+      ;ADC #$A0        ; apply font base offset
+      BEQ done          ; end of string
+      LDA #$CF           ; save ASCII / tile index
+      STA PPUDATA       ; write top tile
+      INX
+      JMP print_big
+    done:
+  .endscope
+  
+  JSR SelectPatternTable_0
+  LDX #10
+  LDY #15
   JSR SetPPUAddr
   LDX #0
   LDA build_version,X ; load first character of the string
@@ -176,6 +205,20 @@ SetPPUAddr:
     LDA tmp
     STA PPUADDR
     RTS
+
+SelectPatternTable_0:
+    LDA PPUCTRL_SHADOW
+    ORA #%00000000        ; select background pattern table $1000
+    STA PPUCTRL
+    STA PPUCTRL_SHADOW
+    RTS
+SelectPatternTable_1:
+    LDA PPUCTRL_SHADOW    ; select background pattern table $1000 (alternate) (default)
+    ORA #%00001000
+    STA PPUCTRL
+    STA PPUCTRL_SHADOW
+    RTS
+
 
 .segment "VECTORS" ; 6502 requires this segment
 .addr nmi_handler, reset_handler, irq_handler
