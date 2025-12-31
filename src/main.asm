@@ -24,7 +24,7 @@ DASH_TILE = $EE
 .byte %00000000 ; NTSC format
 
 .segment "CHR"
-.incbin "../res/pattern_tables_2.chr" ; include the binary file created with NEXXT
+.incbin "../res/pattern_tables.chr" ; include the binary file created with NEXXT
 
 .segment "RODATA" ; Prepare data separated from the logic in this segment
 build_version: .asciiz "Build: xxxxxx" ; null-terminated string
