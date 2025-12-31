@@ -147,6 +147,10 @@ PPUCTRL_SHADOW: .res 1
   JSR SelectPatternTable_0
   LDX #10
   LDY #12
+  LDA #<build_version
+  STA ptr_1
+  LDA #>build_version
+  STA ptr_1+1
   JSR PrintSmallACII
 
   ; center viewer to nametable 0
@@ -170,12 +174,12 @@ PPUCTRL_SHADOW: .res 1
 ;-------------------------------------------
 PrintSmallACII:
   JSR SetPPUAddr
-  LDX #0
+  LDY #0
   print:
-    LDA build_version,X ; load first character of the string
+    LDA (ptr_1),Y
     BEQ done
     STA PPUDATA
-    INX
+    INY
     JMP print
   done:
     RTS
