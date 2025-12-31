@@ -7,7 +7,7 @@ PPUSCROLL = $2005
 PPUADDR   = $2006
 PPUDATA   = $2007
 
-ASCII_A = $30 ; ASCII code of 'A'
+ASCII_A = $41 ; ASCII code of 'A'
 
 
 .segment "HEADER"
@@ -24,7 +24,7 @@ ASCII_A = $30 ; ASCII code of 'A'
 .incbin "../res/pattern_tables_2.chr" ; include the binary file created with NEXXT
 
 .segment "RODATA" ; Prepare data separated from the logic in this segment
-title: .asciiz "NES-RS" ; null-terminated string
+title: .asciiz "NES-0-RS" ; null-terminated string
 build_version: .asciiz "Build: xxxxxx" ; null-terminated string
 
 .segment "ZEROPAGE"
@@ -116,10 +116,14 @@ PPUCTRL_SHADOW: .res 1
  .scope
     print_big:
       LDA title,X
-     ; CLC
-      ;ADC #$A0        ; apply font base offset
       BEQ done          ; end of string
-      LDA #$CE           ; save ASCII / tile index
+      SEC
+      SBC #ASCII_A
+      CLC
+      ASL A
+      CLC
+      ADC #$B4
+      CLC
       STA PPUDATA       ; write top tile
       INX
       JMP print_big
@@ -134,10 +138,14 @@ PPUCTRL_SHADOW: .res 1
  .scope
     print_big:
       LDA title,X
-     ; CLC
-      ;ADC #$A0        ; apply font base offset
       BEQ done          ; end of string
-      LDA #$CF           ; save ASCII / tile index
+      SEC
+      SBC #ASCII_A
+      CLC
+      ASL A
+      CLC
+      ADC #$B5
+      CLC
       STA PPUDATA       ; write top tile
       INX
       JMP print_big
