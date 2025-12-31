@@ -1,6 +1,5 @@
-; MMIO registers
-; Memory-Mapped Input/Output registers
 .include "registers.inc"
+.include "macros.inc"
 
 .importzp PPUCTRL_SHADOW
 .importzp ptr_1
@@ -97,21 +96,8 @@
   LDA #$0F   ; color 3: black
   STA PPUDATA
 
-  LDX #10
-  LDY #08
-  LDA #<title_tiles
-  STA ptr_1
-  LDA #>title_tiles
-  STA ptr_1+1
-  JSR PrintBigTiles
-  
-  LDX #10
-  LDY #12
-  LDA #<build_version
-  STA ptr_1
-  LDA #>build_version
-  STA ptr_1+1
-  JSR PrintSmallACII
+  PRINT_BIG 10, 8, title_tiles
+  PRINT_SMALL 10, 12, build_version
 
   ; center viewer to nametable 0
   LDA #0
@@ -119,7 +105,7 @@
   STA PPUSCROLL ; Y position (this also clears the w register)
 
   ;     BGRsbMmG
-  LDA #%00001010
+  LDA #%00001000
   STA PPUMASK ; Enable background drawing and leftmost 8 pixels of screen
 
   forever:
