@@ -114,37 +114,12 @@ PPUCTRL_SHADOW: .res 1
 
   LDX #10
   LDY #08
-  JSR SetPPUAddr
-  JSR SelectPatternTable_0
-  LDX #0
- .scope
-    print_big:
-      LDA title_tiles,X
-      BEQ done          ; end of string
-      STA PPUDATA       ; write top tile
-      INX
-      JMP print_big
-    done:
-  .endscope
+  LDA #<title_tiles
+  STA ptr_1
+  LDA #>title_tiles
+  STA ptr_1+1
+  JSR PrintBigTiles
   
-  LDX #10
-  LDY #09
-  JSR SetPPUAddr
-  JSR SelectPatternTable_0
-  LDX #0
- .scope
-    print_big:
-      LDA title_tiles,X
-      BEQ done
-      CLC
-      ADC #1         
-      STA PPUDATA
-      INX
-      JMP print_big
-    done:
-  .endscope
-  
-  JSR SelectPatternTable_0
   LDX #10
   LDY #12
   LDA #<build_version
@@ -172,7 +147,7 @@ PPUCTRL_SHADOW: .res 1
 ; Y = row    (0–29)
 ; ptr_1 = pointer to string
 ;-------------------------------------------
-PrintSmallACII:
+.proc PrintSmallACII
   JSR SetPPUAddr
   LDY #0
   print:
@@ -183,6 +158,40 @@ PrintSmallACII:
     JMP print
   done:
     RTS
+.endproc
+
+;-------------------------------------------
+; Print text using the 8x16 font tiles
+; X = column (0–31)
+; Y = row    (0–29)
+; ptr_1 = pointer to the left tile indexes of the text
+;-------------------------------------------
+.proc PrintBigTiles
+  JSR SetPPUAddr
+  STY tmp_1
+  LDY #0
+  print_upper:
+    LDA (ptr_1),Y
+    BEQ end_upper
+    STA PPUDATA
+    INY
+    JMP print_upper
+  end_upper:
+    LDY tmp_1
+    INY
+    JSR SetPPUAddr
+    LDY #0
+  print_lower:
+    LDA (ptr_1),Y
+    BEQ done
+    CLC
+    ADC #1
+    STA PPUDATA
+    INY
+    JMP print_lower
+  done:
+    RTS
+.endproc
 
 ;-------------------------------------------
 ; SetPPUAddr
