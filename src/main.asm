@@ -9,6 +9,13 @@ PPUDATA   = $2007
 
 ASCII_A = $41 ; ASCII code of 'A'
 
+E_TILE = $BC
+N_TILE = $CE
+R_TILE = $D6
+S_TILE = $D8
+DASH_TILE = $EE
+
+
 
 .segment "HEADER"
 ;            EOF
@@ -26,6 +33,7 @@ ASCII_A = $41 ; ASCII code of 'A'
 .segment "RODATA" ; Prepare data separated from the logic in this segment
 title: .asciiz "NES-0-RS" ; null-terminated string
 build_version: .asciiz "Build: xxxxxx" ; null-terminated string
+title_tiles: .byte N_TILE, E_TILE, S_TILE, DASH_TILE, E_TILE, R_TILE, S_TILE
 
 .segment "ZEROPAGE"
 tmp:   .res 1
