@@ -31,8 +31,8 @@ build_version: .asciiz "Build: xxxxxx" ; null-terminated string
 title_tiles: .byte N_TILE, E_TILE, S_TILE, DASH_TILE, R_TILE, S_TILE,0
 
 .segment "ZEROPAGE"
-tmp:   .res 1
-tmp_col:  .res 1
+tmp_1:  .res 1
+tmp_2:  .res 1
 PPUCTRL_SHADOW: .res 1
 
 
@@ -176,7 +176,7 @@ PPUCTRL_SHADOW: .res 1
 ; Y = row    (0–29)
 ;-------------------------------------------
 SetPPUAddr:
-    STX tmp_col        ; save column
+    STX tmp_1        ; save column
 
     ; ----- low byte -----
     TYA
@@ -186,8 +186,8 @@ SetPPUAddr:
     ASL A
     ASL A              ; A = (row * 32) low byte
     CLC
-    ADC tmp_col
-    STA tmp             ; low byte
+    ADC tmp_1        ; low byte
+    STA tmp_2             ; low byte
 
     ; ----- high byte -----
     TYA
@@ -196,12 +196,12 @@ SetPPUAddr:
     LSR A              ; A = row / 8
     CLC
     ADC #$20            ; base nametable
-    STA tmp_col         ; high byte
+    STA tmp_1         ; high byte
 
     ; ----- write PPUADDR -----
-    LDA tmp_col
+    LDA tmp_1
     STA PPUADDR
-    LDA tmp
+    LDA tmp_2
     STA PPUADDR
     RTS
 
