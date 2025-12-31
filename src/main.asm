@@ -7,15 +7,11 @@ PPUSCROLL = $2005
 PPUADDR   = $2006
 PPUDATA   = $2007
 
-ASCII_A = $41 ; ASCII code of 'A'
-
 E_TILE = $BC
 N_TILE = $CE
 R_TILE = $D6
 S_TILE = $D8
 DASH_TILE = $EE
-
-
 
 .segment "HEADER"
 ;            EOF
@@ -31,9 +27,8 @@ DASH_TILE = $EE
 .incbin "../res/pattern_tables_2.chr" ; include the binary file created with NEXXT
 
 .segment "RODATA" ; Prepare data separated from the logic in this segment
-title: .asciiz "NES-0-RS" ; null-terminated string
 build_version: .asciiz "Build: xxxxxx" ; null-terminated string
-title_tiles: .byte N_TILE, E_TILE, S_TILE, DASH_TILE, E_TILE, R_TILE, S_TILE
+title_tiles: .byte N_TILE, E_TILE, S_TILE, DASH_TILE, R_TILE, S_TILE,0
 
 .segment "ZEROPAGE"
 tmp:   .res 1
@@ -123,15 +118,8 @@ PPUCTRL_SHADOW: .res 1
   LDX #0
  .scope
     print_big:
-      LDA title,X
+      LDA title_tiles,X
       BEQ done          ; end of string
-      SEC
-      SBC #ASCII_A
-      CLC
-      ASL A
-      CLC
-      ADC #$B4
-      CLC
       STA PPUDATA       ; write top tile
       INX
       JMP print_big
@@ -145,16 +133,11 @@ PPUCTRL_SHADOW: .res 1
   LDX #0
  .scope
     print_big:
-      LDA title,X
-      BEQ done          ; end of string
-      SEC
-      SBC #ASCII_A
+      LDA title_tiles,X
+      BEQ done
       CLC
-      ASL A
-      CLC
-      ADC #$B5
-      CLC
-      STA PPUDATA       ; write top tile
+      ADC #1         
+      STA PPUDATA
       INX
       JMP print_big
     done:
@@ -168,10 +151,10 @@ PPUCTRL_SHADOW: .res 1
   LDA build_version,X ; load first character of the string
   .scope
     print:
-      STA PPUDATA ; write its ASCII code, which coincides with its tile index
+      STA PPUDATA
       INX
-      LDA build_version,X ; load next character of the string
-      BNE print ; repeat until null character is loaded
+      LDA build_version,X
+      BNE print
   .endscope
 
   ; center viewer to nametable 0
