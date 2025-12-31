@@ -146,16 +146,7 @@ PPUCTRL_SHADOW: .res 1
   JSR SelectPatternTable_0
   LDX #10
   LDY #12
-  JSR SetPPUAddr
-  LDX #0
-  LDA build_version,X ; load first character of the string
-  .scope
-    print:
-      STA PPUDATA
-      INX
-      LDA build_version,X
-      BNE print
-  .endscope
+  JSR PrintSmallACII
 
   ; center viewer to nametable 0
   LDA #0
@@ -169,6 +160,24 @@ PPUCTRL_SHADOW: .res 1
   forever:
     JMP forever ; Make CPU wait forever, while PPU keeps drawing frames forever
 .endproc
+
+;-------------------------------------------
+; Print a text starting at a given position
+; X = column (0–31)
+; Y = row    (0–29)
+;-------------------------------------------
+PrintSmallACII:
+  JSR SetPPUAddr
+  LDX #0
+  LDA build_version,X ; load first character of the string
+  .scope
+    print:
+      STA PPUDATA
+      INX
+      LDA build_version,X
+      BNE print
+  .endscope
+  RTS
 
 ;-------------------------------------------
 ; SetPPUAddr
