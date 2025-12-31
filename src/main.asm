@@ -33,6 +33,7 @@ title_tiles: .byte N_TILE, E_TILE, S_TILE, DASH_TILE, R_TILE, S_TILE,0
 .segment "ZEROPAGE"
 tmp_1:  .res 1
 tmp_2:  .res 1
+ptr_1:   .res 2
 PPUCTRL_SHADOW: .res 1
 
 
@@ -162,21 +163,20 @@ PPUCTRL_SHADOW: .res 1
 .endproc
 
 ;-------------------------------------------
-; Print a text starting at a given position
+; Print a small text starting at a given position
 ; X = column (0–31)
 ; Y = row    (0–29)
+; ptr_1 = pointer to string
 ;-------------------------------------------
 PrintSmallACII:
   JSR SetPPUAddr
   LDX #0
   LDA build_version,X ; load first character of the string
-  .scope
-    print:
-      STA PPUDATA
-      INX
-      LDA build_version,X
-      BNE print
-  .endscope
+  print:
+    STA PPUDATA
+    INX
+    LDA build_version,X
+    BNE print
   RTS
 
 ;-------------------------------------------
