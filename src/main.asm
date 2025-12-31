@@ -154,7 +154,7 @@ PPUCTRL_SHADOW: .res 1
   
   JSR SelectPatternTable_0
   LDX #10
-  LDY #15
+  LDY #12
   JSR SetPPUAddr
   LDX #0
   LDA build_version,X ; load first character of the string
