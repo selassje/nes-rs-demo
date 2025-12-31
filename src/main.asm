@@ -1,17 +1,13 @@
 ; MMIO registers
 ; Memory-Mapped Input/Output registers
-PPUCTRL   = $2000
-PPUMASK   = $2001
-PPUSTATUS = $2002
-PPUSCROLL = $2005
-PPUADDR   = $2006
-PPUDATA   = $2007
+.include "registers.inc"
 
-E_TILE = $BC
-N_TILE = $CE
-R_TILE = $D6
-S_TILE = $D8
-DASH_TILE = $EE
+.importzp PPUCTRL_SHADOW
+.importzp ptr_1
+.import build_version
+.import title_tiles
+.import PrintSmallACII
+.import PrintBigTiles
 
 .segment "HEADER"
 ;            EOF
@@ -25,17 +21,6 @@ DASH_TILE = $EE
 
 .segment "CHR"
 .incbin "../res/pattern_tables.chr" ; include the binary file created with NEXXT
-
-.segment "RODATA" ; Prepare data separated from the logic in this segment
-build_version: .asciiz "Build: xxxxxx" ; null-terminated string
-title_tiles: .byte N_TILE, E_TILE, S_TILE, DASH_TILE, R_TILE, S_TILE,0
-
-.segment "ZEROPAGE"
-tmp_1:  .res 1
-tmp_2:  .res 1
-ptr_1:   .res 2
-PPUCTRL_SHADOW: .res 1
-
 
 .segment "CODE"
 .export irq_handler
@@ -140,106 +125,6 @@ PPUCTRL_SHADOW: .res 1
   forever:
     JMP forever ; Make CPU wait forever, while PPU keeps drawing frames forever
 .endproc
-
-;-------------------------------------------
-; Print a small text starting at a given position
-; X = column (0–31)
-; Y = row    (0–29)
-; ptr_1 = pointer to string
-;-------------------------------------------
-.proc PrintSmallACII
-  JSR SetPPUAddr
-  LDY #0
-  print:
-    LDA (ptr_1),Y
-    BEQ done
-    STA PPUDATA
-    INY
-    JMP print
-  done:
-    RTS
-.endproc
-
-;-------------------------------------------
-; Print text using the 8x16 font tiles
-; X = column (0–31)
-; Y = row    (0–29)
-; ptr_1 = pointer to the left tile indexes of the text
-;-------------------------------------------
-.proc PrintBigTiles
-  JSR SetPPUAddr
-  STY tmp_1
-  LDY #0
-  print_upper:
-    LDA (ptr_1),Y
-    BEQ end_upper
-    STA PPUDATA
-    INY
-    JMP print_upper
-  end_upper:
-    LDY tmp_1
-    INY
-    JSR SetPPUAddr
-    LDY #0
-  print_lower:
-    LDA (ptr_1),Y
-    BEQ done
-    CLC
-    ADC #1
-    STA PPUDATA
-    INY
-    JMP print_lower
-  done:
-    RTS
-.endproc
-
-;-------------------------------------------
-; SetPPUAddr
-; X = column (0–31)
-; Y = row    (0–29)
-;-------------------------------------------
-SetPPUAddr:
-    STX tmp_1        ; save column
-
-    ; ----- low byte -----
-    TYA
-    ASL A
-    ASL A
-    ASL A
-    ASL A
-    ASL A              ; A = (row * 32) low byte
-    CLC
-    ADC tmp_1        ; low byte
-    STA tmp_2             ; low byte
-
-    ; ----- high byte -----
-    TYA
-    LSR A
-    LSR A
-    LSR A              ; A = row / 8
-    CLC
-    ADC #$20            ; base nametable
-    STA tmp_1         ; high byte
-
-    ; ----- write PPUADDR -----
-    LDA tmp_1
-    STA PPUADDR
-    LDA tmp_2
-    STA PPUADDR
-    RTS
-
-SelectPatternTable_0:
-    LDA PPUCTRL_SHADOW
-    ORA #%00000000        ; select background pattern table $1000
-    STA PPUCTRL
-    STA PPUCTRL_SHADOW
-    RTS
-SelectPatternTable_1:
-    LDA PPUCTRL_SHADOW    ; select background pattern table $1000 (alternate) (default)
-    ORA #%00001000
-    STA PPUCTRL
-    STA PPUCTRL_SHADOW
-    RTS
 
 
 .segment "VECTORS" ; 6502 requires this segment
