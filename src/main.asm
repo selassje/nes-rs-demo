@@ -171,13 +171,14 @@ PPUCTRL_SHADOW: .res 1
 PrintSmallACII:
   JSR SetPPUAddr
   LDX #0
-  LDA build_version,X ; load first character of the string
   print:
+    LDA build_version,X ; load first character of the string
+    BEQ done
     STA PPUDATA
     INX
-    LDA build_version,X
-    BNE print
-  RTS
+    JMP print
+  done:
+    RTS
 
 ;-------------------------------------------
 ; SetPPUAddr
