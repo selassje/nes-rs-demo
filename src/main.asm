@@ -5,8 +5,10 @@
 .importzp ptr_1
 .import build_version
 .import title_tiles
+.import WaitPPUStable
 .import PrintSmallACII
 .import PrintBigTiles
+.import SetScroll
 
 .segment "HEADER"
 ;            EOF
@@ -19,38 +21,24 @@
 .byte %00000000 ; NTSC format
 
 .segment "CHR"
-.incbin "../res/pattern_tables.chr" ; include the binary file created with NEXXT
+.incbin "../res/pattern_tables.chr"
 
 .segment "CODE"
 .export irq_handler
-.proc irq_handler ; 6502 requires this handler
-  RTI ; Just exit, we have no use for this handler in this program.
+.proc irq_handler
+  RTI
 .endproc
 
 .export nmi_handler
-.proc nmi_handler ; 6502 requires this handler
-  RTI ; Just exit, we have no use for this handler in this program.
+.proc nmi_handler
+  RTI
 .endproc
 
 .export reset_handler
 .proc reset_handler ; 6502 requires this handler
-  SEI ; Deactivate IRQ (non-NMI interrupts)
-  CLD ; Deactivate non-existing decimal mode
-  ; NES CPU is a MOS 6502 clone without decimal mode
-  LDX #%00000000
-  STX PPUCTRL ; PPU is unstable on boot, ignore NMI for now
-  STX PPUCTRL_SHADOW ; PPU is unstable on boot, ignore NMI for now
-  STX PPUMASK ; Deactivate PPU drawing, so CPU can safely write to PPU's VRAM
-  BIT PPUSTATUS ; Clear the vblank flag; its value on boot cannot be trusted
-  vblankwait1: ; PPU unstable on boot, wait for vertical blanking
-    BIT PPUSTATUS ; Clear the vblank flag;
-    ; and store its value into bit 7 of CPU status register
-    BPL vblankwait1 ; repeat until bit 7 of CPU status register is set (1)
-  vblankwait2: ; PPU still unstable, wait for another vertical blanking
-    BIT PPUSTATUS
-    BPL vblankwait2
-  ; PPU should be stable enough now
-
+  SEI
+  CLD
+  JSR WaitPPUStable
   ; RAM contents on boot cannot be trusted (visual artifacts)
   ; Clear nametable 0; It is at PPU VRAM's address $2000
   ; CPU registers size is 1 byte, but addresses size is 2 bytes
@@ -100,9 +88,7 @@
   PRINT_SMALL 10, 12, build_version
 
   ; center viewer to nametable 0
-  LDA #0
-  STA PPUSCROLL ; X position (this also sets the w register)
-  STA PPUSCROLL ; Y position (this also clears the w register)
+  SCROLL 0, 0
 
   ;     BGRsbMmG
   LDA #%00001000

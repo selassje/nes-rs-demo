@@ -17,3 +17,9 @@
     STA ptr_1+1
     JSR PrintSmallACII
 .endmacro
+
+.macro SCROLL col, row
+    LDX #col
+    LDY #row
+    JSR SetScroll
+.endmacro

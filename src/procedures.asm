@@ -1,5 +1,7 @@
 .export PrintSmallACII
 .export PrintBigTiles
+.export SetScroll
+.export WaitPPUStable
 
 
 .include "registers.inc"
@@ -8,6 +10,25 @@
 .importzp tmp_1
 .importzp tmp_2
 .importzp ptr_1
+
+;-------------------------------------------
+; Wait for PPU to be stable
+;-------------------------------------------
+.proc WaitPPUStable
+  LDX #%00000000
+  STX PPUCTRL
+  STX PPUCTRL_SHADOW
+  STX PPUMASK
+  BIT PPUSTATUS
+  vblankwait1:
+    BIT PPUSTATUS
+    BPL vblankwait1
+  vblankwait2:
+    BIT PPUSTATUS
+    BPL vblankwait2
+  LDA PPUSTATUS
+  RTS
+.endproc
 
 ;-------------------------------------------
 ; Print a small text starting at a given position
@@ -110,5 +131,11 @@
     ORA #%00001000
     STA PPUCTRL
     STA PPUCTRL_SHADOW
+    RTS
+.endproc
+
+.proc SetScroll
+    STX PPUSCROLL
+    STY PPUSCROLL
     RTS
 .endproc
