@@ -2,6 +2,7 @@
 .export PrintBigTiles
 .export SetScroll
 .export WaitPPUStable
+.export SetBackgroundColors
 
 
 .include "registers.inc"
@@ -117,6 +118,29 @@
     STA PPUADDR
     RTS
 .endproc
+
+;-------------------------------------------
+; SetBackgroundColors
+; X - first color
+; Y - second color
+; tmp_1 = third color
+; tmp_2 = fourth color
+;-------------------------------------------
+.proc SetBackgroundColors
+  LDA PPUSTATUS
+  LDA #$3f
+  STA PPUADDR
+  LDA #$00 
+  STA PPUADDR
+  STX PPUDATA
+  STY PPUDATA
+  LDA tmp_1
+  STA PPUDATA
+  LDA tmp_2
+  STA PPUDATA
+  RTS
+.endproc
+
 
 .proc SelectPatternTable_0
     LDA PPUCTRL_SHADOW
