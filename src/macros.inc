@@ -33,3 +33,12 @@
     STA tmp_2
     JSR SetBackgroundColors
 .endmacro
+
+.macro ENABLE_BACKGROUND_DRAWING
+    JSR EnableBackgroundDrawing
+.endmacro
+
+.macro FILL_BACKGROUND tile_index
+    LDA #tile_index
+    JSR FillBackground
+.endmacro

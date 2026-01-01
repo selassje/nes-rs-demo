@@ -2,6 +2,7 @@
 .exportzp tmp_2
 .exportzp ptr_1
 .exportzp PPUCTRL_SHADOW
+.exportzp PPUMASK_SHADOW
 
 .export build_version
 .export title_tiles
@@ -21,3 +22,4 @@ tmp_1:  .res 1
 tmp_2:  .res 1
 ptr_1:   .res 2
 PPUCTRL_SHADOW: .res 1
+PPUMASK_SHADOW: .res 1

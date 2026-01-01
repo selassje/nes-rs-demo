@@ -3,11 +3,14 @@
 .export SetScroll
 .export WaitPPUStable
 .export SetBackgroundColors
+.export EnableBackgroundDrawing
+.export FillBackground
 
 
 .include "registers.inc"
 
 .importzp PPUCTRL_SHADOW
+.importzp PPUMASK_SHADOW
 .importzp tmp_1
 .importzp tmp_2
 .importzp ptr_1
@@ -16,10 +19,11 @@
 ; Wait for PPU to be stable
 ;-------------------------------------------
 .proc WaitPPUStable
-  LDX #%00000000
+  LDX #0
   STX PPUCTRL
-  STX PPUCTRL_SHADOW
   STX PPUMASK
+  STX PPUMASK_SHADOW
+  STX PPUCTRL_SHADOW
   BIT PPUSTATUS
   vblankwait1:
     BIT PPUSTATUS
@@ -162,4 +166,36 @@
     STX PPUSCROLL
     STY PPUSCROLL
     RTS
+.endproc
+
+.proc EnableBackgroundDrawing
+    LDA PPUMASK_SHADOW
+    ORA #%00001000
+    STA PPUMASK
+    STA PPUMASK_SHADOW
+    RTS
+.endproc
+
+
+;-------------------------------------------
+; FillBackground
+; A - tile index
+;-------------------------------------------
+.proc FillBackground
+  STA tmp_1
+  LDA PPUSTATUS
+  LDA #$20
+  STA PPUADDR
+  LDA #$00
+  STA PPUADDR
+  LDA tmp_1
+  LDX #0
+  LDY #4
+  fill_background:
+    STA PPUDATA
+    INX
+    BNE fill_background
+    DEY
+    BNE fill_background
+  RTS
 .endproc
