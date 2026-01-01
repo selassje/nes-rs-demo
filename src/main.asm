@@ -11,7 +11,8 @@
 .import PrintSmallACII
 .import PrintBigTiles
 .import SetScroll
-.import SetBackgroundColors
+.import SetPaletteColors
+.import SetUniversalBackgroundColor
 .import EnableBackgroundDrawing
 .import FillBackground
 
@@ -47,7 +48,9 @@
 
   FILL_BACKGROUND $00
 
-  SET_BACKGOUND_COLORS COLOR_LIME, COLOR_GREEN, COLOR_LIGHT_BLUE, COLOR_BLACK
+  SET_UNIVERSAL_BACKGROUND_COLOR COLOR_BLACK
+  SET_BG_COLORS 0, COLOR_GREEN, COLOR_LIGHT_BLUE, COLOR_BLACK
+  SET_SPRITE_COLORS 0, COLOR_GREEN, COLOR_LIGHT_BLUE, COLOR_BLACK
 
   PRINT_BIG 10, 8, title_tiles
   PRINT_SMALL 10, 12, build_version

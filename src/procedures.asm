@@ -2,7 +2,8 @@
 .export PrintBigTiles
 .export SetScroll
 .export WaitPPUStable
-.export SetBackgroundColors
+.export SetPaletteColors
+.export SetUniversalBackgroundColor
 .export EnableBackgroundDrawing
 .export FillBackground
 
@@ -120,23 +121,42 @@ PPU_PALETTE_START = $3F00
 .endproc
 
 ;-------------------------------------------
-; SetBackgroundColors
-; X - first color
-; Y - second color
-; tmp_1 = third color
-; tmp_2 = fourth color
+; SetPaletteColors
+; X = palette index (0–3)
+; Y = first color
+; tmp_1 = second color
+; tmp_2 = third color
 ;-------------------------------------------
-.proc SetBackgroundColors
+.proc SetPaletteColors
+  LDA PPUSTATUS
+  TXA
+  ASL A
+  ASL A          
+  CLC
+  ADC #$01         
+  STA tmp_1       
+  LDA #>PPU_PALETTE_START
+  STA PPUADDR
+  LDA tmp_1
+  STA PPUADDR
+  STY PPUDATA
+  LDA tmp_1
+  STA PPUDATA
+  LDA tmp_2
+  STA PPUDATA
+  RTS
+.endproc
+;-------------------------------------------
+; SetUniversalBackgroundColor
+; X = color
+;-------------------------------------------
+.proc SetUniversalBackgroundColor
   LDA PPUSTATUS
   LDA #>PPU_PALETTE_START
   STA PPUADDR
   LDA #<PPU_PALETTE_START
   STA PPUADDR
-  STX PPUDATA
-  STY PPUDATA
-  LDA tmp_1
-  STA PPUDATA
-  LDA tmp_2
+  TXA
   STA PPUDATA
   RTS
 .endproc
