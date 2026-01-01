@@ -1,14 +1,18 @@
 .include "registers.inc"
 .include "macros.inc"
+.include "colors.inc"
 
 .importzp PPUCTRL_SHADOW
 .importzp ptr_1
+.importzp tmp_1
+.importzp tmp_2
 .import build_version
 .import title_tiles
 .import WaitPPUStable
 .import PrintSmallACII
 .import PrintBigTiles
 .import SetScroll
+.import SetBackgroundColors
 
 .segment "HEADER"
 ;            EOF
@@ -66,33 +70,15 @@
     DEY
     BNE empty_background ; repeat 4 times
 
-  ; Background color (index 0 of first color palette)
-  ; is at PPU's VRAM address 3f00
-  LDX #$3f ; 3f00
-  ;          ^^
-  STX PPUADDR
-  LDX #$00 ; 3f00
-  ;            ^^
-  STX PPUADDR
-  ; Finally, we need indexes of two PPU's internal color
-  LDA #$2A ; green for the transparency color (palette 0 color 0)
-  STA PPUDATA
-  LDA #$17 ; orange for the first background color (palette 0 color 1)
-  STA PPUDATA
-  LDA #$21   ; color 2: blue
-  STA PPUDATA
-  LDA #$0F   ; color 3: black
-  STA PPUDATA
+  SET_BACKGOUND_COLORS COLOR_LIME, COLOR_GREEN, COLOR_LIGHT_BLUE, COLOR_BLACK
 
   PRINT_BIG 10, 8, title_tiles
   PRINT_SMALL 10, 12, build_version
 
-  ; center viewer to nametable 0
   SCROLL 0, 0
 
-  ;     BGRsbMmG
   LDA #%00001000
-  STA PPUMASK ; Enable background drawing and leftmost 8 pixels of screen
+  STA PPUMASK
 
   forever:
     JMP forever ; Make CPU wait forever, while PPU keeps drawing frames forever
