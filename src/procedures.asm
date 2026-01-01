@@ -6,6 +6,8 @@
 .export EnableBackgroundDrawing
 .export FillBackground
 
+PPU_NAMETABLE_START = $2000
+PPU_PALETTE_START = $3F00
 
 .include "registers.inc"
 
@@ -93,29 +95,23 @@
 ; Y = row    (0–29)
 ;-------------------------------------------
 .proc SetPPUAddr
-    STX tmp_1        ; save column
-
-    ; ----- low byte -----
+    STX tmp_1
     TYA
     ASL A
     ASL A
     ASL A
     ASL A
-    ASL A              ; A = (row * 32) low byte
+    ASL A
     CLC
-    ADC tmp_1        ; low byte
-    STA tmp_2             ; low byte
-
-    ; ----- high byte -----
+    ADC tmp_1
+    STA tmp_2
     TYA
     LSR A
     LSR A
-    LSR A              ; A = row / 8
+    LSR A
     CLC
-    ADC #$20            ; base nametable
-    STA tmp_1         ; high byte
-
-    ; ----- write PPUADDR -----
+    ADC #>PPU_NAMETABLE_START
+    STA tmp_1
     LDA tmp_1
     STA PPUADDR
     LDA tmp_2
@@ -132,9 +128,9 @@
 ;-------------------------------------------
 .proc SetBackgroundColors
   LDA PPUSTATUS
-  LDA #$3f
+  LDA #>PPU_PALETTE_START
   STA PPUADDR
-  LDA #$00 
+  LDA #<PPU_PALETTE_START
   STA PPUADDR
   STX PPUDATA
   STY PPUDATA
@@ -144,7 +140,6 @@
   STA PPUDATA
   RTS
 .endproc
-
 
 .proc SelectPatternTable_0
     LDA PPUCTRL_SHADOW
@@ -176,7 +171,6 @@
     RTS
 .endproc
 
-
 ;-------------------------------------------
 ; FillBackground
 ; A - tile index
@@ -184,9 +178,9 @@
 .proc FillBackground
   STA tmp_1
   LDA PPUSTATUS
-  LDA #$20
+  LDA #>PPU_NAMETABLE_START
   STA PPUADDR
-  LDA #$00
+  LDA #<PPU_NAMETABLE_START
   STA PPUADDR
   LDA tmp_1
   LDX #0
