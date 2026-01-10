@@ -8,6 +8,24 @@
   JSR PrintBigTiles
 .endmacro
 
+; Print 16x16 Mega Man style big font
+; col, row = position
+; label_top = top row tile data
+; label_bottom = bottom row tile data
+.macro PRINT_16X16 col, row, label_top, label_bottom
+  LDX #col
+  LDY #row
+  LDA #<label_top
+  STA ptr_1
+  LDA #>label_top
+  STA ptr_1+1
+  LDA #<label_bottom
+  STA ptr_2
+  LDA #>label_bottom
+  STA ptr_2+1
+  JSR Print16x16Tiles
+.endmacro
+
 .macro PRINT_SMALL col, row, label
     LDX #col
     LDY #row

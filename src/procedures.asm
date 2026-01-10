@@ -1,5 +1,6 @@
 .export PrintSmallACII
 .export PrintBigTiles
+.export Print16x16Tiles
 .export SetScroll
 .export WaitPPUStable
 .export SetPaletteColors
@@ -17,6 +18,7 @@ PPU_PALETTE_START = $3F00
 .importzp tmp_1
 .importzp tmp_2
 .importzp ptr_1
+.importzp ptr_2
 
 ;-------------------------------------------
 ; Wait for PPU to be stable
@@ -86,6 +88,40 @@ PPU_PALETTE_START = $3F00
     STA PPUDATA
     INY
     JMP print_lower
+  done:
+    RTS
+.endproc
+
+;-------------------------------------------
+; Print 16x16 tiles (Mega Man style big font)
+; X = column (0–31)
+; Y = row    (0–29)
+; ptr_1 = pointer to top row tiles (null-terminated)
+; ptr_2 = pointer to bottom row tiles (null-terminated)
+;-------------------------------------------
+.proc Print16x16Tiles
+  JSR SetPPUAddr      ; set PPU addr for top row (preserves X, Y)
+  STX tmp_1           ; save column AFTER SetPPUAddr (it clobbers tmp_1/tmp_2)
+  STY tmp_2           ; save row
+  LDY #0
+  print_top:
+    LDA (ptr_1),Y
+    BEQ end_top
+    STA PPUDATA
+    INY
+    JMP print_top
+  end_top:
+    LDX tmp_1         ; restore column
+    LDY tmp_2         ; restore row
+    INY               ; move to next row
+    JSR SetPPUAddr    ; set PPU addr for bottom row
+    LDY #0
+  print_bottom:
+    LDA (ptr_2),Y
+    BEQ done
+    STA PPUDATA
+    INY
+    JMP print_bottom
   done:
     RTS
 .endproc
