@@ -58,13 +58,11 @@
   SET_BG_COLORS 0, COLOR_GREEN, COLOR_LIGHT_BLUE, COLOR_BLACK
   SET_SPRITE_COLORS 0, COLOR_GREEN, COLOR_LIGHT_BLUE, COLOR_BLACK
 
-  ; Big 32x32 Mega Man style title "NES-RS"
-  ; 6 chars * 4 tiles = 24 tiles wide, centered at column 4
-  PRINT_SMALL 4, 6, title_row0
-  PRINT_SMALL 4, 7, title_row1
-  PRINT_SMALL 4, 8, title_row2
-  PRINT_SMALL 4, 9, title_row3
-  PRINT_SMALL 10, 12, build_version
+  PRINT_SMALL 4, 10, title_row0
+  PRINT_SMALL 4, 11, title_row1
+  PRINT_SMALL 4, 12, title_row2
+  PRINT_SMALL 4, 13, title_row3
+  PRINT_SMALL 10, 15, build_version
 
   SCROLL 0, 0
 
